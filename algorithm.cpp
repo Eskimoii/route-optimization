@@ -2,29 +2,31 @@
 using namespace std;
 
 struct Result {
-    int distance;
+    double distance;
     vector<int> path;
 };
 
 class Graph{
  int V;
- vector<vector<pair<int,int>>> adj;
+ vector<vector<pair<int,double>>> adj;
 
- void dijkstra(int src, vector<int>& dist, vector<int>& parent) {
-        dist.assign(V, INT_MAX);
+ void dijkstra(int src, vector<double>& dist, vector<int>& parent) {
+        dist.assign(V, numeric_limits<double>::infinity());
         parent.resize(V);
         for (int i = 0; i < V; i++)
             parent[i] = i;
-        priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
+        priority_queue<pair<double,int>,vector<pair<double,int>>,greater<pair<double,int>>> pq;
         dist[src] = 0;
         pq.push({0, src});
         while (!pq.empty()) {
             auto t = pq.top();
-            int d=t.first,node=t.second;
+            double d=t.first;
+            int node=t.second;
             pq.pop();
             if (d > dist[node]) continue;
             for (auto a: adj[node]) {
-                int adjNode=a.first,wt=a.second;
+                int adjNode=a.first;
+                double wt=a.second;
                 if (d + wt < dist[adjNode]) {
                     dist[adjNode] = d + wt;
                     parent[adjNode] = node;
@@ -40,17 +42,16 @@ class Graph{
          adj.resize(V);
       }
 
-      void addEdge(int u,int v,int w){
+      void addEdge(int u,int v,double w){
         adj[u].push_back({v,w});
-        adj[v].push_back({u,w});
       }
 
      Result shortestPath(int src, int dest){
-            vector<int> dist;
+            vector<double> dist;
             vector<int> parent;
             dijkstra(src,dist,parent);
             Result r;
-            if (dist[dest] == INT_MAX){
+            if (dist[dest] == numeric_limits<double>::infinity()){
             return {-1, {}};
             }
             int node = dest;
@@ -67,15 +68,21 @@ class Graph{
 };
 
 int main(){
-    
+    ifstream file("road_network/graph.txt");
+    if (!file) {
+        cerr << "Could not open graph.txt\n";
+        return 1;
+    }
     int n,m;
-    cin>>n>>m;
+    file >> n >> m;
     Graph g(n);
     for(int i=0;i<m;i++){
-        int u,v,w;
-        cin>>u>>v>>w;
+        int u,v;
+        double w;
+        file >> u >> v >> w;
         g.addEdge(u,v,w);
     }
+    file.close();
     int src,dest;
     cin>>src>>dest;
     if (src < 0 || src >= n || dest < 0 || dest >= n) {
